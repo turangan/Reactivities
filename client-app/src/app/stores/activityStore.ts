@@ -44,7 +44,6 @@ class ActivityStore {
           this.activityRegistry.set(activity.id, activity);
           this.loadingInitial = false;
         });
-        console.log(this.groupActivitiesByDate(activities));
       });
     } catch (error) {
       runInAction("loading activities error", () => {

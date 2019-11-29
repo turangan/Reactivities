@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Persistence;
+using Microsoft.Extensions.Hosting;
+using FluentValidation.AspNetCore;
+using API.Middleware;
 
 namespace API
 {
@@ -35,26 +38,41 @@ namespace API
             });
 
             services.AddMediatR(typeof(List.Handler).Assembly);
-
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            // services.AddControllers().AddFluentValidation(cfg =>
+            // {
+            //     cfg.RegisterValidatorsFromAssemblyContaining<Create>();
+            // });
+            services.AddMvc()
+            .AddFluentValidation(cfg =>
+            {
+                cfg.RegisterValidatorsFromAssemblyContaining<Create>();
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseMiddleware<ErrorHandlingMiddleware>();
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                // app.UseDeveloperExceptionPage();
+
             }
             else
             {
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 // app.UseHsts();
             }
-
+            app.UseRouting();
+            app.UseAuthorization();
             // app.UseHttpsRedirection();
             app.UseCors("CorsPolicy");
-            app.UseMvc();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapDefaultControllerRoute();
+            });
+            // app.AddMvc();
         }
     }
 }
